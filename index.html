@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAVEN T-Shirts</title>
+  <meta name="description" content="RAVEN T-shirt shop with storefront, account login, cart, checkout, and admin product panel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#shop" data-route="shop">
+      <span class="brand-mark">RAVEN</span>
+      <span class="brand-sub">T-Shirt Company</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#shop" data-route="shop">Shop</a>
+      <a href="#account" data-route="account">Account</a>
+      <a href="#admin" data-route="admin" data-admin-link hidden>Admin</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" type="button" id="openSearchBtn" aria-label="Focus search">
+        <i data-lucide="search"></i>
+      </button>
+      <button class="icon-btn cart-btn" type="button" id="cartToggleBtn" aria-label="Open cart">
+        <i data-lucide="shopping-bag"></i>
+        <span id="cartCount">0</span>
+      </button>
+      <button class="pill-btn" type="button" id="authActionBtn">Login</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="shop">
+      <div class="hero-media" aria-hidden="true">
+        <div class="shirt-wall">
+          <div class="shirt-card rust"><span>Oversized</span></div>
+          <div class="shirt-card ink"><span>Graphic</span></div>
+          <div class="shirt-card cream"><span>Minimal</span></div>
+        </div>
+      </div>
+      <div class="hero-content">
+        <p class="eyebrow">New drop live</p>
+        <h1>RAVEN streetwear for everyday rotation.</h1>
+        <p>Browse premium T-shirts, save your cart, create an account, and manage products from a built-in admin panel.</p>
+        <div class="hero-actions">
+          <a class="solid-btn" href="#catalog">Shop Collection</a>
+          <a class="ghost-btn" href="#admin" data-admin-hero hidden>Admin Panel</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="toolbar" id="catalog">
+      <div class="search-wrap">
+        <i data-lucide="search"></i>
+        <input id="searchInput" type="search" placeholder="Search T-shirts, colors, sizes">
+      </div>
+      <select id="categoryFilter" aria-label="Filter by category">
+        <option value="all">All Categories</option>
+      </select>
+      <select id="sortSelect" aria-label="Sort products">
+        <option value="featured">Featured</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
+        <option value="stock">In Stock First</option>
+      </select>
+    </section>
+
+    <section class="quick-stats">
+      <article>
+        <span>Products</span>
+        <strong id="productTotal">0</strong>
+      </article>
+      <article>
+        <span>In Stock</span>
+        <strong id="stockTotal">0</strong>
+      </article>
+      <article>
+        <span>Orders</span>
+        <strong id="orderTotal">0</strong>
+      </article>
+      <article>
+        <span>Cart Total</span>
+        <strong id="cartTotalStat">0.00</strong>
+      </article>
+    </section>
+
+    <section class="catalog-grid" id="productGrid" aria-live="polite"></section>
+
+    <section class="page-section" id="accountPage" hidden>
+      <div class="section-head">
+        <p class="eyebrow">My Account</p>
+        <h2>Profile and orders</h2>
+      </div>
+      <div id="accountContent" class="account-layout"></div>
+    </section>
+
+    <section class="page-section admin-section" id="adminPage" hidden>
+      <div class="section-head">
+        <p class="eyebrow">Admin Panel</p>
+        <h2>Products, orders, and customers</h2>
+      </div>
+
+      <div class="admin-grid">
+        <form id="productForm" class="panel product-form">
+          <input type="hidden" id="productId">
+          <h3 id="productFormTitle">Add Product</h3>
+          <label>
+            <span>Name</span>
+            <input id="productName" type="text" placeholder="RAVEN Core Tee" required>
+          </label>
+          <div class="two-col">
+            <label>
+              <span>Price</span>
+              <input id="productPrice" type="number" min="0" step="0.01" required>
+            </label>
+            <label>
+              <span>Stock</span>
+              <input id="productStock" type="number" min="0" step="1" required>
+            </label>
+          </div>
+          <div class="two-col">
+            <label>
+              <span>Category</span>
+              <input id="productCategory" type="text" placeholder="Graphic">
+            </label>
+            <label>
+              <span>Badge</span>
+              <input id="productBadge" type="text" placeholder="New">
+            </label>
+          </div>
+          <label>
+            <span>Sizes</span>
+            <input id="productSizes" type="text" placeholder="S, M, L, XL">
+          </label>
+          <label>
+            <span>Colors</span>
+            <input id="productColors" type="text" placeholder="Black, White">
+          </label>
+          <label>
+            <span>Description</span>
+            <textarea id="productDescription" rows="3" placeholder="Short product description"></textarea>
+          </label>
+          <label>
+            <span>Image URL</span>
+            <input id="productImage" type="url" placeholder="https://...">
+          </label>
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="resetProductFormBtn">Clear</button>
+            <button class="solid-btn" type="submit">Save Product</button>
+          </div>
+        </form>
+
+        <div class="admin-column">
+          <div class="panel">
+            <div class="panel-title-row">
+              <h3>Product List</h3>
+              <button class="ghost-btn small" type="button" id="exportProductsBtn">Export JSON</button>
+            </div>
+            <div id="adminProducts" class="admin-list"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Recent Orders</h3>
+            <div id="adminOrders" class="admin-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <p class="eyebrow">Cart</p>
+        <h2>Your Bag</h2>
+      </div>
+      <button class="icon-btn" type="button" id="closeCartBtn" aria-label="Close cart">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary">
+      <div><span>Subtotal</span><strong id="cartSubtotal">0.00</strong></div>
+      <div><span>Delivery</span><strong>90.00</strong></div>
+      <div class="cart-grand"><span>Total</span><strong id="cartGrandTotal">0.00</strong></div>
+      <button class="solid-btn full" type="button" id="checkoutBtn">Checkout</button>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay" hidden></div>
+
+  <dialog class="modal" id="authModal">
+    <form class="modal-card" method="dialog" id="authForm">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow" id="authEyebrow">Login</p>
+          <h2 id="authTitle">Welcome back</h2>
+        </div>
+        <button class="icon-btn" value="cancel" type="submit" aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <label>
+        <span>Name</span>
+        <input id="authName" type="text" placeholder="Your name">
+      </label>
+      <label>
+        <span>Email</span>
+        <input id="authEmail" type="email" placeholder="you@example.com" required>
+      </label>
+      <label>
+        <span>Password</span>
+        <input id="authPassword" type="password" placeholder="Minimum 4 characters" required>
+      </label>
+      <div class="form-actions">
+        <button class="ghost-btn" type="button" id="switchAuthModeBtn">Create account</button>
+        <button class="solid-btn" type="submit" id="authSubmitBtn">Login</button>
+      </div>
+      <p class="fine-print">Demo admin: admin@raven.test / admin123</p>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="checkoutModal">
+    <form class="modal-card" method="dialog" id="checkoutForm">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">Checkout</p>
+          <h2>Delivery details</h2>
+        </div>
+        <button class="icon-btn" value="cancel" type="submit" aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <label>
+        <span>Customer Name</span>
+        <input id="checkoutName" type="text" required>
+      </label>
+      <label>
+        <span>Phone</span>
+        <input id="checkoutPhone" type="text" required>
+      </label>
+      <label>
+        <span>Address</span>
+        <textarea id="checkoutAddress" rows="3" required></textarea>
+      </label>
+      <label>
+        <span>Payment Method</span>
+        <select id="checkoutPayment">
+          <option value="Cash on Delivery">Cash on Delivery</option>
+          <option value="Bkash">Bkash</option>
+          <option value="Nagad">Nagad</option>
+          <option value="Card">Card</option>
+        </select>
+      </label>
+      <button class="solid-btn full" type="submit">Place Order</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
