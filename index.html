@@ -21,7 +21,7 @@
     <nav class="main-nav" aria-label="Main navigation">
       <a href="#shop" data-route="shop">Shop</a>
       <a href="#account" data-route="account">Account</a>
-      <a href="#admin" data-route="admin" data-admin-link hidden>Admin</a>
+      <a href="#admin" data-route="admin">Admin</a>
     </nav>
 
     <div class="header-actions">
@@ -51,7 +51,7 @@
         <p>Browse premium T-shirts, save your cart, create an account, and manage products from a built-in admin panel.</p>
         <div class="hero-actions">
           <a class="solid-btn" href="#catalog">Shop Collection</a>
-          <a class="ghost-btn" href="#admin" data-admin-hero hidden>Admin Panel</a>
+          <a class="ghost-btn" href="#admin">Admin Panel</a>
         </div>
       </div>
     </section>
@@ -107,7 +107,16 @@
         <h2>Products, orders, and customers</h2>
       </div>
 
-      <div class="admin-grid">
+      <div id="adminGate" class="panel admin-gate" hidden>
+        <h3>Admin login required</h3>
+        <p class="product-desc">Use the owner email, password, and OTP verification to unlock product and order management.</p>
+        <div class="form-actions">
+          <button class="solid-btn" type="button" data-auth-open="login">Login as Admin</button>
+        </div>
+        <p class="fine-print">Admin email: mdnuhad534@gmail.com | Password: admin123</p>
+      </div>
+
+      <div class="admin-grid" id="adminGrid">
         <form id="productForm" class="panel product-form">
           <input type="hidden" id="productId">
           <h3 id="productFormTitle">Add Product</h3>
@@ -221,7 +230,30 @@
         <button class="ghost-btn" type="button" id="switchAuthModeBtn">Create account</button>
         <button class="solid-btn" type="submit" id="authSubmitBtn">Login</button>
       </div>
-      <p class="fine-print">Demo admin: admin@raven.test / admin123</p>
+      <p class="fine-print">Admin: mdnuhad534@gmail.com / admin123. All login and signup attempts require OTP.</p>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="otpModal">
+    <form class="modal-card" method="dialog" id="otpForm">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">OTP Verification</p>
+          <h2>Confirm account access</h2>
+        </div>
+        <button class="icon-btn" value="cancel" type="submit" aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <p class="product-desc">A demo OTP has been generated for this static GitHub Pages site.</p>
+      <div class="otp-demo-code" id="otpDemoCode">000000</div>
+      <label>
+        <span>Enter OTP</span>
+        <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="6 digit code" required>
+      </label>
+      <div class="form-actions">
+        <button class="ghost-btn" type="button" id="resendOtpBtn">New OTP</button>
+        <button class="solid-btn" type="submit">Verify OTP</button>
+      </div>
+      <p class="fine-print">For real email OTP, this needs a backend service. This demo keeps everything free and static.</p>
     </form>
   </dialog>
 

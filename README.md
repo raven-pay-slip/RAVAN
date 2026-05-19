@@ -14,9 +14,11 @@ Then go to `Settings` > `Pages`, choose `Deploy from a branch`, select your main
 
 ## Demo Admin
 
-Email: `admin@raven.test`
+Email: `mdnuhad534@gmail.com`
 
 Password: `admin123`
+
+Login and signup ask for an OTP. Because GitHub Pages has no backend email server, this demo shows the OTP on screen. For a real shop, connect a backend email or SMS service.
 
 ## Important
 

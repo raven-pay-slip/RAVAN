@@ -7,6 +7,8 @@ const STORE_KEYS = {
 };
 
 const deliveryCharge = 90;
+const ADMIN_EMAIL = "mdnuhad534@gmail.com";
+const ADMIN_PASSWORD = "admin123";
 const defaultProducts = [
   {
     id: "tee-oversized-black",
@@ -110,6 +112,11 @@ const els = {
   authTitle: document.getElementById("authTitle"),
   authSubmitBtn: document.getElementById("authSubmitBtn"),
   switchAuthModeBtn: document.getElementById("switchAuthModeBtn"),
+  otpModal: document.getElementById("otpModal"),
+  otpForm: document.getElementById("otpForm"),
+  otpInput: document.getElementById("otpInput"),
+  otpDemoCode: document.getElementById("otpDemoCode"),
+  resendOtpBtn: document.getElementById("resendOtpBtn"),
   checkoutBtn: document.getElementById("checkoutBtn"),
   checkoutModal: document.getElementById("checkoutModal"),
   checkoutForm: document.getElementById("checkoutForm"),
@@ -119,6 +126,8 @@ const els = {
   checkoutPayment: document.getElementById("checkoutPayment"),
   accountPage: document.getElementById("accountPage"),
   adminPage: document.getElementById("adminPage"),
+  adminGate: document.getElementById("adminGate"),
+  adminGrid: document.getElementById("adminGrid"),
   accountContent: document.getElementById("accountContent"),
   productForm: document.getElementById("productForm"),
   productFormTitle: document.getElementById("productFormTitle"),
@@ -140,6 +149,7 @@ const els = {
 };
 
 let authMode = "login";
+let pendingOtp = null;
 
 function read(key, fallback) {
   try {
@@ -159,17 +169,28 @@ function ensureSeedData() {
   }
 
   const users = read(STORE_KEYS.users, []);
-  if (!users.some((user) => user.email === "admin@raven.test")) {
-    users.push({
-      id: "admin",
-      name: "RAVEN Admin",
-      email: "admin@raven.test",
-      password: "admin123",
-      role: "admin",
-      createdAt: new Date().toISOString(),
-    });
-    write(STORE_KEYS.users, users);
+  const adminIndex = users.findIndex((user) => user.email === ADMIN_EMAIL);
+  const adminUser = {
+    id: "admin-owner",
+    name: "RAVEN Owner",
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+    role: "admin",
+    createdAt: new Date().toISOString(),
+  };
+
+  if (adminIndex >= 0) {
+    users[adminIndex] = { ...users[adminIndex], ...adminUser };
+  } else {
+    users.push(adminUser);
   }
+
+  const oldAdminIndex = users.findIndex((user) => user.email === "admin@raven.test");
+  if (oldAdminIndex >= 0) {
+    users.splice(oldAdminIndex, 1);
+  }
+
+  write(STORE_KEYS.users, users);
 }
 
 function products() {
@@ -424,7 +445,77 @@ function setAuthMode(mode) {
 function openAuth(mode = "login") {
   setAuthMode(mode);
   els.authForm.reset();
+  if (mode === "login") {
+    els.authEmail.value = "";
+  }
   els.authModal.showModal();
+}
+
+function startOtpChallenge(user, mode = "login") {
+  pendingOtp = {
+    code: String(Math.floor(100000 + Math.random() * 900000)),
+    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    mode,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  };
+  els.otpDemoCode.textContent = pendingOtp.code;
+  els.otpInput.value = "";
+  els.authModal.close();
+  els.otpModal.showModal();
+  toast("OTP generated");
+}
+
+function completeOtpLogin(event) {
+  event.preventDefault();
+  if (!pendingOtp) {
+    toast("No OTP request found");
+    return;
+  }
+
+  if (Date.now() > pendingOtp.expiresAt) {
+    toast("OTP expired. Generate a new one.");
+    return;
+  }
+
+  if (els.otpInput.value.trim() !== pendingOtp.code) {
+    toast("Wrong OTP");
+    return;
+  }
+
+  if (pendingOtp.mode === "signup") {
+    const users = read(STORE_KEYS.users, []);
+    if (!users.some((user) => user.email === pendingOtp.user.email)) {
+      users.push({
+        ...pendingOtp.user,
+        password: pendingOtp.password,
+        createdAt: new Date().toISOString(),
+      });
+      write(STORE_KEYS.users, users);
+    }
+  }
+
+  saveSession(pendingOtp.user);
+  const redirectToAdmin = pendingOtp.user.role === "admin";
+  pendingOtp = null;
+  els.otpModal.close();
+  location.hash = redirectToAdmin ? "#admin" : "#account";
+  renderSession();
+  renderAccount();
+  renderAdmin();
+  route();
+  toast(redirectToAdmin ? "Admin unlocked" : "Account verified");
+}
+
+function resendOtp() {
+  if (!pendingOtp?.user) {
+    toast("Login again to request OTP");
+    return;
+  }
+  pendingOtp.code = String(Math.floor(100000 + Math.random() * 900000));
+  pendingOtp.expiresAt = Date.now() + 5 * 60 * 1000;
+  els.otpDemoCode.textContent = pendingOtp.code;
+  els.otpInput.value = "";
+  toast("New OTP generated");
 }
 
 function handleAuth(event) {
@@ -446,27 +537,19 @@ function handleAuth(event) {
       id: `user-${Date.now()}`,
       name: els.authName.value.trim() || email.split("@")[0],
       email,
-      password,
       role: "customer",
-      createdAt: new Date().toISOString(),
     };
-    users.push(user);
-    write(STORE_KEYS.users, users);
-    saveSession({ id: user.id, name: user.name, email: user.email, role: user.role });
+    startOtpChallenge({ ...user, password }, "signup");
+    return;
   } else {
     const user = users.find((candidate) => candidate.email === email && candidate.password === password);
     if (!user) {
       toast("Wrong email or password");
       return;
     }
-    saveSession({ id: user.id, name: user.name, email: user.email, role: user.role });
+    startOtpChallenge(user, "login");
+    return;
   }
-
-  els.authModal.close();
-  renderSession();
-  renderAccount();
-  renderAdmin();
-  toast("Logged in");
 }
 
 function logout() {
@@ -480,14 +563,10 @@ function logout() {
 function renderSession() {
   const user = session();
   const isAdmin = user?.role === "admin";
-  document.querySelectorAll("[data-admin-link], [data-admin-hero]").forEach((el) => {
-    el.hidden = !isAdmin;
-  });
 
   els.authActionBtn.textContent = user ? "Logout" : "Login";
-  if (!isAdmin && location.hash === "#admin") {
-    location.hash = "#shop";
-  }
+  els.adminGate.hidden = isAdmin;
+  els.adminGrid.hidden = !isAdmin;
 }
 
 function placeOrder(event) {
@@ -657,9 +736,13 @@ function deleteProduct(id) {
 function renderAdmin() {
   const user = session();
   if (user?.role !== "admin") {
-    els.adminPage.hidden = true;
+    els.adminGate.hidden = false;
+    els.adminGrid.hidden = true;
     return;
   }
+
+  els.adminGate.hidden = true;
+  els.adminGrid.hidden = false;
 
   const productHtml = products()
     .map(
@@ -705,7 +788,7 @@ function route() {
   const isAdmin = user?.role === "admin";
 
   els.accountPage.hidden = hash !== "#account";
-  els.adminPage.hidden = hash !== "#admin" || !isAdmin;
+  els.adminPage.hidden = hash !== "#admin";
 
   document.querySelectorAll(".main-nav a").forEach((link) => {
     link.classList.toggle("active", link.getAttribute("href") === hash);
@@ -714,7 +797,7 @@ function route() {
   if (hash === "#account") {
     renderAccount();
   }
-  if (hash === "#admin" && isAdmin) {
+  if (hash === "#admin") {
     renderAdmin();
   }
 }
@@ -786,11 +869,21 @@ function attachEvents() {
     setAuthMode(authMode === "login" ? "signup" : "login");
   });
   els.authForm.addEventListener("submit", handleAuth);
+  els.otpForm.addEventListener("submit", completeOtpLogin);
+  els.resendOtpBtn.addEventListener("click", resendOtp);
 
   els.accountContent.addEventListener("click", (event) => {
     const button = event.target.closest("[data-auth-open]");
     if (button) {
       openAuth(button.dataset.authOpen);
+    }
+  });
+
+  els.adminGate.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-auth-open]");
+    if (button) {
+      openAuth(button.dataset.authOpen);
+      els.authEmail.value = ADMIN_EMAIL;
     }
   });
 
